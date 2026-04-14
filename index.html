@@ -3,15 +3,34 @@
 <head>
   <title>SQL Injection Lab - Data Retrieval</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .container { border: 1px solid #ccc; padding: 20px; max-width: 500px; border-radius: 5px; }
-    input { width: 90%; margin-bottom: 10px; padding: 8px; }
-    button { padding: 10px; width: 100%; cursor: pointer; }
-    #query-box { font-family: monospace; background: #f4f4f4; padding: 10px; margin-top: 15px; word-wrap: break-word; }
+    body { 
+      font-family: sans-serif; 
+      margin: 0; 
+      height: 100vh; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      background-color: #f4f4f4;
+    }
+    .container { 
+      border: 1px solid #ccc; 
+      padding: 30px; 
+      width: 100%;
+      max-width: 400px; 
+      border-radius: 8px; 
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .header { display: flex; align-items: center; margin-bottom: 20px; }
+    .header svg { width: 24px; height: 24px; margin-right: 10px; fill: #333; }
+    .header h2 { margin: 0; }
+    input { width: 90%; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 10px; width: 100%; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
+    button:hover { background: #0056b3; }
     #message { margin-top: 15px; font-weight: bold; text-align: center; }
     .success { color: green; }
     .error { color: red; }
-    table { width: 100%; margin-top: 15px; border-collapse: collapse; display: none; }
+    table { width: 100%; margin-top: 15px; border-collapse: collapse; display: none; font-size: 14px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background-color: #f2f2f2; }
   </style>
@@ -19,36 +38,33 @@
 <body>
 
   <div class="container">
-    <h2>Login Simulator</h2>
-    <input type="text" id="username" placeholder="Username" oninput="updateQuery()">
-    <input type="password" id="password" placeholder="Password" oninput="updateQuery()">
+    <div class="header">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4zm0 5c-3.87 0-6-1.18-6-2s2.13-2 6-2 6 1.18 6 2-2.13 2-6 2zm0 3c-3.87 0-6-1.18-6-2v2c0 2.21 3.58 4 8 4s8-1.79 8-4v-2c0 .82-2.13 2-6 2zm0 5c-3.87 0-6-1.18-6-2v2c0 2.21 3.58 4 8 4s8-1.79 8-4v-2c0 .82-2.13 2-6 2z"/>
+      </svg>
+      <h2>Login</h2>
+    </div>
+    
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
     <button onclick="attemptLogin()">Login</button>
 
-    <div id="query-box">SELECT * FROM users WHERE username = '' AND password = ''</div>
     <div id="message"></div>
     
     <table id="data-table">
       <thead>
-        <tr><th>ID</th><th>Username</th><th>Sensitive Data (Hash/Key)</th></tr>
+        <tr><th>ID</th><th>Username</th><th>Sensitive Data</th></tr>
       </thead>
       <tbody id="data-body"></tbody>
     </table>
   </div>
 
   <script>
-    // Simulated Backend Database
     const mockDatabase = [
       { id: 1, user: 'admin', secret: '7b902e6ff1c9fce2d17343941400d75b' },
       { id: 2, user: 'sec_service', secret: 'AKIAIOSFODNN7EXAMPLE' },
       { id: 3, user: 'jfunderburk', secret: 'hunter2' }
     ];
-
-    function updateQuery() {
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      document.getElementById('query-box').innerText = 
-        `SELECT * FROM users WHERE username = '${user}' AND password = '${pass}'`;
-    }
 
     function attemptLogin() {
       const user = document.getElementById('username').value.toUpperCase();
@@ -56,25 +72,18 @@
       const table = document.getElementById('data-table');
       const tbody = document.getElementById('data-body');
       
-      // Reset UI
       table.style.display = 'none';
       tbody.innerHTML = '';
       
-      // Simulate UNION SELECT data extraction
       if (user.includes("' UNION SELECT") || user.includes("' UNION ALL SELECT")) {
-        msg.innerHTML = "<span class='success'>Data Extraction Successful: UNION query executed.</span>";
+        msg.innerHTML = "<span class='success'>Data Extraction Successful</span>";
         table.style.display = 'table';
-        
         mockDatabase.forEach(row => {
           tbody.innerHTML += `<tr><td>${row.id}</td><td>${row.user}</td><td>${row.secret}</td></tr>`;
         });
-      } 
-      // Simulate basic Auth Bypass
-      else if (user.includes("' OR 1=1") || user.includes("' OR '1'='1")) {
+      } else if (user.includes("' OR 1=1") || user.includes("' OR '1'='1")) {
         msg.innerHTML = "<span class='success'>Access Granted: SQL Bypass Successful!</span>";
-      } 
-      // Failed login
-      else {
+      } else {
         msg.innerHTML = "<span class='error'>Access Denied. Invalid credentials.</span>";
       }
     }
