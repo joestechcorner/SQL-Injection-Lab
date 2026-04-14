@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SQL Injection Lab</title>
+  <title>SQL Injection Lab - Data Retrieval</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    .container { border: 1px solid #ccc; padding: 20px; max-width: 400px; border-radius: 5px; }
+    .container { border: 1px solid #ccc; padding: 20px; max-width: 500px; border-radius: 5px; }
     input { width: 90%; margin-bottom: 10px; padding: 8px; }
     button { padding: 10px; width: 100%; cursor: pointer; }
     #query-box { font-family: monospace; background: #f4f4f4; padding: 10px; margin-top: 15px; word-wrap: break-word; }
     #message { margin-top: 15px; font-weight: bold; text-align: center; }
     .success { color: green; }
     .error { color: red; }
+    table { width: 100%; margin-top: 15px; border-collapse: collapse; display: none; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
   </style>
 </head>
 <body>
@@ -23,9 +26,23 @@
 
     <div id="query-box">SELECT * FROM users WHERE username = '' AND password = ''</div>
     <div id="message"></div>
+    
+    <table id="data-table">
+      <thead>
+        <tr><th>ID</th><th>Username</th><th>Sensitive Data (Hash/Key)</th></tr>
+      </thead>
+      <tbody id="data-body"></tbody>
+    </table>
   </div>
 
   <script>
+    // Simulated Backend Database
+    const mockDatabase = [
+      { id: 1, user: 'admin', secret: '7b902e6ff1c9fce2d17343941400d75b' },
+      { id: 2, user: 'sec_service', secret: 'AKIAIOSFODNN7EXAMPLE' },
+      { id: 3, user: 'jfunderburk', secret: 'hunter2' }
+    ];
+
     function updateQuery() {
       const user = document.getElementById('username').value;
       const pass = document.getElementById('password').value;
@@ -34,13 +51,30 @@
     }
 
     function attemptLogin() {
-      const user = document.getElementById('username').value;
+      const user = document.getElementById('username').value.toUpperCase();
       const msg = document.getElementById('message');
+      const table = document.getElementById('data-table');
+      const tbody = document.getElementById('data-body');
       
-      // Basic check for common SQLi patterns
-      if (user.includes("' OR 1=1") || user.includes("' OR '1'='1") || user.includes("' OR 1=1 --")) {
+      // Reset UI
+      table.style.display = 'none';
+      tbody.innerHTML = '';
+      
+      // Simulate UNION SELECT data extraction
+      if (user.includes("' UNION SELECT") || user.includes("' UNION ALL SELECT")) {
+        msg.innerHTML = "<span class='success'>Data Extraction Successful: UNION query executed.</span>";
+        table.style.display = 'table';
+        
+        mockDatabase.forEach(row => {
+          tbody.innerHTML += `<tr><td>${row.id}</td><td>${row.user}</td><td>${row.secret}</td></tr>`;
+        });
+      } 
+      // Simulate basic Auth Bypass
+      else if (user.includes("' OR 1=1") || user.includes("' OR '1'='1")) {
         msg.innerHTML = "<span class='success'>Access Granted: SQL Bypass Successful!</span>";
-      } else {
+      } 
+      // Failed login
+      else {
         msg.innerHTML = "<span class='error'>Access Denied. Invalid credentials.</span>";
       }
     }
