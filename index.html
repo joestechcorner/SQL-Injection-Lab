@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SQL Injection Lab</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .container { border: 1px solid #ccc; padding: 20px; max-width: 400px; border-radius: 5px; }
+    input { width: 90%; margin-bottom: 10px; padding: 8px; }
+    button { padding: 10px; width: 100%; cursor: pointer; }
+    #query-box { font-family: monospace; background: #f4f4f4; padding: 10px; margin-top: 15px; word-wrap: break-word; }
+    #message { margin-top: 15px; font-weight: bold; text-align: center; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Login Simulator</h2>
+    <input type="text" id="username" placeholder="Username" oninput="updateQuery()">
+    <input type="password" id="password" placeholder="Password" oninput="updateQuery()">
+    <button onclick="attemptLogin()">Login</button>
+
+    <div id="query-box">SELECT * FROM users WHERE username = '' AND password = ''</div>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    function updateQuery() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      document.getElementById('query-box').innerText = 
+        `SELECT * FROM users WHERE username = '${user}' AND password = '${pass}'`;
+    }
+
+    function attemptLogin() {
+      const user = document.getElementById('username').value;
+      const msg = document.getElementById('message');
+      
+      // Basic check for common SQLi patterns
+      if (user.includes("' OR 1=1") || user.includes("' OR '1'='1") || user.includes("' OR 1=1 --")) {
+        msg.innerHTML = "<span class='success'>Access Granted: SQL Bypass Successful!</span>";
+      } else {
+        msg.innerHTML = "<span class='error'>Access Denied. Invalid credentials.</span>";
+      }
+    }
+  </script>
+
+</body>
+</html>
