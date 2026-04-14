@@ -1,0 +1,7 @@
+import sqlite3
+conn = sqlite3.connect('lab.db')
+cursor = conn.cursor()
+
+# The '?' placeholders ensure input is never executed as SQL code
+query = "SELECT * FROM users WHERE username = ? AND password = ?"
+cursor.execute(query, (username_input, password_input))
